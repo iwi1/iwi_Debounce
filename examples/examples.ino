@@ -1,5 +1,5 @@
 #include <iwi_debounce.h>
-#include <Timers.h>
+#include <Timers.h> //https://github.com/nettigo/Timers/tree/master/Timers
 
 #define LONGPRESS 2000   //po jakim czasie nastapi wywolanie funkcji 2
 #define KEY_PIN2 46     //Ustawienie klawisza
