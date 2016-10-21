@@ -1,0 +1,120 @@
+
+
+    #include "Timers.h"
+         
+    #define VIBRATIONS 100   //Ustawiamy czas drgan stykow
+    #define LONGPRESS 2000   //po jakim czasie nastapi wywolanie funkcji 2
+    #define KEY_PIN2 46     //Ustawienie klawisza
+    #define KEY_PIN1 45     //Ustawienie klawisza
+    #define LED_PIN1 42     //Ustawienie LED
+    #define LED_PIN2 43     //Ustawienie LED
+    #define LED_PIN3 44     //Ustawienie LED
+         
+         
+    typedef struct  {
+            uint16_t t_pressDelay;
+            uint16_t t_start;
+            boolean presskey;
+            boolean keyState;
+            void (*kfun1)(void);
+            void (*kfun2)(void);
+    }Key_hand_t;
+         
+        // Zmienne
+    boolean ledState1, ledState2, ledState3;
+    uint8_t kPress1, kPress2;
+    Timer Timer1;
+         
+    Key_hand_t Key_hand_1;
+    Key_hand_t Key_hand_2;
+     
+    //DEKLARACJA FUNKCJI    
+    void iwi_debounce(uint8_t keypin, uint16_t time_longPress, Key_hand_t *Key_hand);    
+    void change_led1(void);
+    void change_led2(void);
+    void change_led3(void);
+    void change_led4(void);
+       
+    void setup() {
+          Serial.begin(9600);
+          Timer1.begin(1000);
+          pinMode(KEY_PIN2, INPUT_PULLUP);
+          pinMode(KEY_PIN1, INPUT_PULLUP);
+          pinMode(LED_PIN1, OUTPUT);
+          pinMode(LED_PIN2, OUTPUT);
+          pinMode(LED_PIN3, OUTPUT);
+          Key_hand_1.kfun1 = change_led1;
+          Key_hand_1.kfun2 = change_led2;
+          Key_hand_2.kfun1 = change_led3;
+          Key_hand_2.kfun2 = change_led4;
+     
+     
+    }
+     
+         
+    void loop() {
+        iwi_debounce(KEY_PIN1, LONGPRESS, &Key_hand_1);
+        iwi_debounce(KEY_PIN2, LONGPRESS, &Key_hand_2);    
+     
+     
+        if (Timer1.available()) {
+        ledState1 = !ledState1;
+        Timer1.restart();
+    }
+        digitalWrite(LED_PIN1, ledState1);
+        digitalWrite(LED_PIN2, ledState2);
+        digitalWrite(LED_PIN3, ledState3);
+    }
+     
+    //DEFINICJE FUNKCJI
+    void iwi_debounce(uint8_t keypin, uint16_t time_longPress, Key_hand_t *Key_hand) {
+          Key_hand->presskey = digitalRead(keypin);
+            if (Key_hand->presskey == LOW) {
+                if (Key_hand->keyState ==0) {
+                        Key_hand->t_start = millis();
+                        Key_hand->keyState = 1;
+                }
+                else  Key_hand->t_pressDelay = millis() - Key_hand->t_start;
+            } else {
+                   if (( Key_hand->t_pressDelay > VIBRATIONS ) && (Key_hand->keyState == 1) && (Key_hand->t_pressDelay < time_longPress)) {
+                  Key_hand->keyState=0;
+                  Key_hand->t_pressDelay=0;
+                  Key_hand->kfun1();
+                 
+              }
+              else if (( Key_hand->t_pressDelay > VIBRATIONS ) && (Key_hand->keyState == 1) && (Key_hand->t_pressDelay >= time_longPress)) {
+                  Key_hand->keyState=0;
+                  Key_hand->t_pressDelay=0;
+                  Key_hand->kfun2();
+              }
+              else {
+                Key_hand->keyState=0;
+              }
+             
+            }
+    }
+    // własne funkcje użytkownika
+    void change_led1(void) {
+     ledState3 =!ledState3;
+     digitalWrite (LED_PIN1, ledState3);
+     Serial.println("KLAWISZ 1 FUNKCJA SHORT ");
+    }
+     
+    void change_led2(void) {
+     ledState2 =!ledState2;
+     digitalWrite (LED_PIN2, ledState2);
+    Serial.println("KLAWISZ 1 FUNKCJA LONG ");
+    }
+    void change_led3(void) {
+     ledState2 =!ledState2;
+     digitalWrite (LED_PIN1, ledState2);
+    Serial.println("KLAWISZ 2 FUNKCJA SHORT ");
+    }
+     
+    void change_led4(void) {
+     ledState3 =!ledState3;
+     digitalWrite (LED_PIN2, ledState3);
+     Serial.println("KLAWISZ 2 FUNKCJA LONG ");
+    }
+
+GeSHi
